@@ -2,10 +2,9 @@
 #EXT-X-APP APTV
 #EXT-X-APTV-TYPE local
 
-#EXTINF:-1 group-title="主频道",频道名称1
-#EXTINF:-1 group-title="东汉之崩",崛起之路
+#EXTINF:-1 group-title="主频道",崛起之路
 https://www.iesdouyin.com/aweme/v1/playwm/?video_id=v0200fg10000cspco87og65v6gga118g&ratio=720p&line=0.m3u8
-#EXTINF:-1 group-title="东汉之崩",洛阳惊变
+#EXTINF:-1 group-title="主频道",洛阳惊变
 https://www.iesdouyin.com/aweme/v1/playwm/?video_id=v0200fg10000cspch67og65p7tgj4hlg&ratio=720p&line=0.m3u8
 #EXTINF:-1 group-title="东汉之崩",群雄讨董
 https://www.iesdouyin.com/aweme/v1/playwm/?video_id=v0d00fg10000cspc7svog65tdfifkupg&ratio=720p&line=0.m3u8
