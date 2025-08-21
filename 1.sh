@@ -1,7 +1,7 @@
 bash -c "$(cat <<'EOF'
 #!/bin/bash
 set -e
-echo "🚀 一键部署 misaka_danmu_server (一条命令零依赖版)"
+echo "🚀 一键部署 misaka_danmu_server "
 echo
 read -p "⚠️ 确认要开始部署吗？输入 yes 继续: " CONFIRM
 if [ "$CONFIRM" != "yes" ]; then
