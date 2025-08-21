@@ -1,6 +1,6 @@
 bash -c "$(cat <<'EOF'
 #!/bin/bash
-set -euo pipefail  # 严格模式，减少潜在错误
+set -euo pipefail
 
 # 彩色输出函数
 info() { echo -e "\033[34mℹ️ $*\033[0m"; }
@@ -10,15 +10,28 @@ error() { echo -e "\033[31m❌ $*\033[0m" >&2; exit 1; }
 
 info "一键部署 misaka_danmu_server (增强版)"
 
-# 检查依赖
+# 调整依赖检测逻辑：允许手动确认
 check_dependency() {
-  if ! command -v "$1" &> /dev/null; then
-    error "未找到 $1，请先安装后重试"
+  local cmd=$1
+  if ! command -v "$cmd" &> /dev/null; then
+    warning "未自动检测到 $cmd，但可能已安装"
+    read -p "确认已安装 $cmd 并希望继续？(y/N): " confirm
+    if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
+      error "请安装 $cmd 后重试"
+    fi
   fi
 }
+
+# 检测 Docker
 check_dependency docker
+
+# 检测 Docker Compose（兼容两种命令格式）
 if ! (docker compose version &> /dev/null || docker-compose version &> /dev/null); then
-  error "未找到 docker compose 或 docker-compose，请先安装"
+  warning "未自动检测到 docker compose 或 docker-compose"
+  read -p "确认已安装 Docker Compose 并希望继续？(y/N): " confirm
+  if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
+    error "请安装 Docker Compose 后重试"
+  fi
 fi
 
 # 用户配置（支持自定义）
@@ -28,7 +41,7 @@ MISAKA_PORT=${MISAKA_PORT:-7768}
 read -p "安装目录 (默认: ~/misaka_danmu_server): " INSTALL_DIR
 INSTALL_DIR=${INSTALL_DIR:-"$HOME/misaka_danmu_server"}
 
-# 增加最终确认步骤
+# 最终确认步骤
 info "即将开始部署，配置信息如下："
 echo "  服务端口: $MISAKA_PORT"
 echo "  安装目录: $INSTALL_DIR"
@@ -43,7 +56,7 @@ if [ -d "$INSTALL_DIR" ]; then
   if [ "$confirm" != "y" ] && [ "$confirm" != "Y" ]; then
     error "用户取消部署"
   fi
-  rm -rf "$INSTALL_DIR"  # 清理旧目录
+  rm -rf "$INSTALL_DIR"
 fi
 
 mkdir -p "$INSTALL_DIR" && cd "$INSTALL_DIR"
@@ -51,9 +64,9 @@ mkdir -p "$INSTALL_DIR" && cd "$INSTALL_DIR"
 # 生成随机密码
 DB_PASSWORD=$(openssl rand -base64 12)
 
-# 写入 docker-compose（优化MySQL安全配置）
+# 写入 docker-compose
 cat > docker-compose.yaml <<EOC
-version: "3"  # 兼容更多Docker版本
+version: "3"
 services:
   mysql:
     image: mysql:8.1.0-oracle
@@ -67,7 +80,6 @@ services:
     volumes:
       - ./mysql:/var/lib/mysql
     restart: always
-    # 仅内部网络通信，不暴露公网端口
     networks:
       - misaka-network
   misaka:
@@ -103,7 +115,7 @@ else
   docker-compose up -d
 fi
 
-# 智能等待服务就绪（最多60秒）
+# 智能等待服务就绪
 info "等待服务初始化（最多60秒）..."
 for i in {1..30}; do
   if docker logs misaka-danmu-server 2>/dev/null | grep "Admin account created" &> /dev/null; then
