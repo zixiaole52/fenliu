@@ -1,8 +1,7 @@
-bash -c "$(cat <<'EOF'
 #!/bin/bash
 set -e
-echo "🚀 一键部署 misaka_danmu_server (一条命令零依赖版)"
-echo
+
+echo "🚀 一键部署 misaka_danmu_server (零依赖版)"
 read -p "⚠️ 确认要开始部署吗？输入 yes 继续: " CONFIRM
 if [ "$CONFIRM" != "yes" ]; then
   echo "❌ 已取消部署"
@@ -17,8 +16,8 @@ INSTALL_DIR="$HOME/misaka_danmu_server"
 mkdir -p "$INSTALL_DIR"
 cd "$INSTALL_DIR"
 
-# 写 docker-compose.yaml
-cat > docker-compose.yaml <<EOC
+# 写入 docker-compose.yaml
+cat > docker-compose.yaml <<EOF
 version: "3.9"
 
 services:
@@ -56,25 +55,23 @@ services:
     ports:
       - "${MISAKA_PORT}:${MISAKA_PORT}"
     restart: always
-EOC
+EOF
 
-# 启动容器
 echo "📦 启动容器..."
 docker compose up -d || docker-compose up -d
 
-# 等待初始化
-echo "⏳ 等待 misaka_danmu_server 初始化..."
+echo "⏳ 等待初始化..."
 sleep 10
 
-# 抓取真实 admin 密码
-ADMIN_PASSWORD=$(docker logs misaka-danmu-server 2>/dev/null | grep "Admin account created" | awk -F'password=' '{print $2}' | head -n1)
+# 自动抓取 admin 初始密码
+ADMIN_PASSWORD=$(docker logs misaka-danmu-server 2>/dev/null \
+  | grep "Admin account created" \
+  | awk -F'password=' '{print $2}' \
+  | head -n1)
 
-# 输出信息
 echo "✅ 部署完成！"
 echo "👉 浏览器访问: http://你的服务器IP:${MISAKA_PORT}"
 echo "👉 MySQL 密码: ${DB_PASSWORD}"
 echo "👉 管理员用户名: admin"
 echo "👉 管理员初始密码: ${ADMIN_PASSWORD}"
 echo "💡 建议首次登录后立即修改密码"
-EOF
-)"
