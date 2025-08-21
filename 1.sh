@@ -2,6 +2,12 @@ bash -c "$(cat <<'EOF'
 #!/bin/bash
 set -e
 echo "🚀 一键部署 misaka_danmu_server (一条命令零依赖版)"
+echo
+read -p "⚠️ 确认要开始部署吗？输入 yes 继续: " CONFIRM
+if [ "$CONFIRM" != "yes" ]; then
+  echo "❌ 已取消部署"
+  exit 1
+fi
 
 # 自动生成 MySQL 密码
 DB_PASSWORD=$(openssl rand -base64 12)
